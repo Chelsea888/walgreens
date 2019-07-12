@@ -1,6 +1,5 @@
 <?php
 require "header.php";
-require "functions.php";
 
 $edit = isset($_REQUEST['edit']) ? $_REQUEST['edit'] : 0;
 $userid = isset($_REQUEST['userid']) ? $_REQUEST['userid'] : -1;
@@ -67,16 +66,16 @@ if ($action == 'update') {
         $zipcode = $_REQUEST['zipcode'];
         $phone = $_REQUEST['phone'];
 
-        $isInCustomerTable = false;
-        $stmt = $db->query("SELECT * FROM Customer where cus_id = " . $userid);
-        foreach ($stmt as $row) {
-            $isInCustomerTable = true;
-            break;
-        }
+        #$isInCustomerTable = false;
+        #$stmt = $db->query("SELECT * FROM Customer where cus_id = " . $userid);
+        #foreach ($stmt as $row) {
+           # $isInCustomerTable = true;
+           # break;
+        #}
 
-        print_r($isInCustomerTable);
+       # print_r($isInCustomerTable);
 
-        if ($isInCustomerTable) {
+        if (isCustomer($db, $userid)) {
             $req = $db->prepare("UPDATE Customer set 
                                             gwid        = :gwid,
                                             first_name  = :first_name,
@@ -138,7 +137,15 @@ if ($action == 'update') {
         }
     }
 }
+?>
 
+  <div class="container marketing">
+
+    <div class="row">
+        <div class="col-lg-3"></div>
+      <div class="col-lg-6">
+
+<?php
 if (isPrescriber($db, $userid)) {
     $sql = "SELECT users.email, users.username, P.first_name, P.last_name, P.expertise, P.location, P.phone
                 FROM Prescriber P
@@ -466,14 +473,17 @@ if (isCustomer($db, $userid)) {
     }
 }
 ?>
-<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+      </div><!-- /.col-lg-4 -->
+        <div class="col-lg-3"></div>
+    </div><!-- /.row -->
+</div><!-- /.row -->
+
 <link id="bsdp-css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript">
     $('.datepicker').datepicker({
     });
 </script>
-</body>
-</html>
+<?php
+require "footer.php";
+?>

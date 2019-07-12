@@ -1,4 +1,41 @@
 <?php
+/*Class Customer{
+    function  __construct($cus_id,$gwid,$firs_name,$last_name,$DoB,$insurance,$addr_street,$addr_apt,$addr_state,$zipcode,$phone)
+    {$this->cus_id = $cus_id;
+    $this->gwid = $gwid;
+    $this->first_name = $firs_name;
+    $this->last_name = $last_name;
+    $this ->DoB =$DoB;
+    $this ->insurance = $insurance;
+    $this->addr_street = $addr_street;
+    $this ->addr_apt = $addr_apt;
+    $this ->addr_state = $addr_state;
+    $this ->zipcode = $zipcode;
+    $this ->phone = $phone;
+    $this->order = [];
+    }
+    function make_order($order_id,$cus_id,$rx_mu,$orderGenDate){
+
+        $order_obj = new Order($order_id,$cus_id,$rx_mu,$orderGenDate);
+
+
+    }
+}
+
+class Order{
+    static $ordercount = 0;
+    function __construct($order_id,$cusid,$rx_num,$gen_datedate){
+        $this->cus_id = $cusid;
+        $this->rx_num = $rx_num;
+        $this ->gen_date = $$gen_datedate;
+        self ::$ordercount++;
+        self ::$ordercount = $order_id;
+    }
+
+    function tell_order(){}
+
+    }
+*/
 Class Drug{
     function __construct($NDC, $drug_name, $drug_stren, $production_date, $discard_date, $unit_price){
         $this->NDC = $NDC;
@@ -18,7 +55,10 @@ Class Prescription {
         #$this ->doc_firstn = $doc_firstn;
         $this ->rx_written_date = $rx_written_date;
         $this ->drugs = [];
+
     }
+
+
 
     function create_drug($db, $cusid)
     {
@@ -43,3 +83,4 @@ Class Prescription {
         }
     }
 }
+
