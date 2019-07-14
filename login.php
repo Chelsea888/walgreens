@@ -15,6 +15,8 @@ $db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser'
 #$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
+$PROJECTNAME = "walgreens";
+
 require_once "functions.php";
 ?>
 <!doctype html>
@@ -55,14 +57,14 @@ require_once "functions.php";
 <body>
 <header>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="/CJ_Project/">Walgreens X GWU Drug Store</a>
+        <a class="navbar-brand" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/CJ_Project/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="links.php">Quick Links</a>
@@ -108,7 +110,7 @@ if (!$auth->isLoggedIn()) {
             $auth->login($_POST['email'], $_POST['password']);
 
             echo 'User is logged in';
-            header("Location: /CJ_Project/");
+            header("Location: /$PROJECTNAME/");
         } catch (\Delight\Auth\InvalidEmailException $e) {
             die('Wrong email address');
         } catch (\Delight\Auth\InvalidPasswordException $e) {
@@ -165,5 +167,5 @@ if (!$auth->isLoggedIn()) {
         require "footer.php";
     }
 } else {
-    header("Location: /CJ_Project/");
+    header("Location: /$PROJECTNAME/");
 }

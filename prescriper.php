@@ -4,6 +4,13 @@
  * @param $cusid
  */
 require "header.php";
+?>
+<div class="container marketing">
+
+    <div class="row pt-5 pb-5">
+        <div class="col-lg-2"></div>
+        <div class="col-lg-8">
+<?php
 
 /*function showDrugCategory($db)
 {
@@ -24,43 +31,77 @@ $action = isset($_REQUEST['action']) ? $_REQUEST['action']: '';
 if ($action == 'add_prescription') {
     $prescriber_id = $auth->getUserId();
     $rx_num = addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $refills);
-    header("Location: /CJ_Project/myprescriptions.php?rx_num=$rx_num");
+    header("Location: /$PROJECTNAME/myprescriptions.php?rx_num=$rx_num");
     #addPrescription_drug($db,$drug_name);
 } else {
-    echo "<form id = 'pres_form' name='pres_form' method = 'post' action = 'prescriper.php' >";
-        echo "<fieldset>";
-            echo "<legend >Create Prescription:</legend>";
-
-            echo "<div class = 'input-group form-group'>";
-                //echo "<input type = 'text' class = 'form-control' id = 'gwid' name = 'gwid' placeholder = 'Input patient GWID'/></div>";
-            echo "
-            <div class='ui-widget'>
-                <label for='gwid'>GWID:&nbsp; </label>
-                <input type='text' class ='form-control' id='gwid' name='gwid' placeholder = 'Input patient GWID' />
-            </div>
-            ";
-
-            echo "<div class = 'select-group form group'>";
-                echo "<label>Category:&nbsp;</label><select id='category' name = 'category'>";
-                    echo "<option value ='' selected = 'selected'>Please select category</option>";
-                    echo "</select>";
-
-                echo "<lable>&nbsp;&nbsp;&nbsp; Drug:&nbsp;</lable><select id='drug' >";
-                    echo "<option value = '' selected = 'selected'>Select Drugs</option>";
-                    echo "</select>";
-
-                echo "<label>&nbsp;Refill Option:&nbsp;";
-                    echo "<input id='refill' type = 'number',min = '1' max = '4' oninput=\"this.value = Math.abs(this.value)\"></div>";
-
-            echo "<div><button type='button' id='add_drug' type = '' class='btn btn-dark' >Add Drug</button></div>";
-
-            echo "<div >";
-
-                echo "<input type='hidden' name='action' value='add_prescription' />";
-                echo "<button type = 'submit' class='btn btn-dark'>Add Prescription</button></div>";
-
-            echo "</fieldset></form>";
     ?>
+        <form id = 'pres_form' name='pres_form' method = 'post' action = 'prescriper.php' >
+                <input type='hidden' name='action' value='add_prescription' />
+
+                <h2>Create New Prescription</h2>
+
+                <div class="form-row">
+                <div class = 'form-group'>
+                    <label for='gwid'>GWID:&nbsp; </label>
+                    <input type='text' class ='form-control' id='gwid' name='gwid' placeholder = 'Input patient GWID' />
+                </div>
+                </div>
+
+
+                <div class = 'select-group form-group'>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <label for="category">Category:</label>
+                        </div>
+                        <div class="col-lg-8">
+                            <select id='category' name = 'category'>
+                                <option value ='' selected = 'selected'>Please select category</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <label for="drug">Drug:</label>
+                        </div>
+                        <div class="col-lg-8">
+                            <select id='drug' >
+                                <option value = '' selected = 'selected'>Select Drugs</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <label for="refill">Refill Option:</label>
+                        </div>
+                        <div class="col-lg-8">
+                            <input id='refill' type = 'number',min = '1' max = '4' oninput="this.value = Math.abs(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <button type='button' id='add_drug' class='btn btn-dark' >Add Drug</button>
+                        </div>
+                        <div class="col-lg-8 pb-lg-0">
+                            Click this button to add drugs to the prescription
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+
+                </div>
+
+                <div>
+                    <button type = 'submit' class='btn btn-primary'>Add Prescription</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-lg-2"></div>
+    </div>
+</div>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -83,20 +124,34 @@ if ($action == 'add_prescription') {
             // click add drug to add drug with refill option
             $('#add_drug').click(function() {
                 if ($( "#drug option:selected" ) && $( "#drug option:selected" ).val()) {
-                    var div = $('<div>');
-                    div.append($('<label>').text('Drug'));
-                    div.append($('<input>').attr({
+                    var div = $('<div>').attr({
+                        class : "row"
+                    });
+                    var div1 = $('<div>').attr({
+                        class : "col"
+                    });
+                    div1.append($('<label>').text('Drug'));
+                    div1.append($('<input>').attr({
                         type: 'input',
                         name: 'drugs[]',
                         value: $( "#drug option:selected" ).val()
                     }));
-                    div.append($('<label>').text('Refill'));
-                    div.append($('<input>').attr({
+
+                    div.append(div1);
+
+                    var div2 =  $('<div>').attr({
+                        class : "col"
+                    });
+                    div2.append($('<label>').text('Refill'));
+                    div2.append($('<input>').attr({
                         type: 'input',
                         name: 'refills[]',
                         value: $( "#refill" ).val()
                     }));
-                    $('#add_drug').parent().after(div);
+
+                    div.append(div2);
+
+                    $('#add_drug').parent().parent().after(div);
                 }
             });
 

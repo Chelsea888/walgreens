@@ -201,10 +201,10 @@ if (isset($_REQUEST['email']) && isset($_REQUEST['password'])) {
 }
 
 ?>
-            </div><!-- /.col-lg-4 -->
+            </div>
             <div class="col-lg-3"></div>
-        </div><!-- /.row -->
-    </div><!-- /.row -->
+        </div>
+    </div>
 
 <link id="bsdp-css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>

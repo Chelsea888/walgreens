@@ -15,9 +15,11 @@ $db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser'
 #$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
+$PROJECTNAME = "walgreens";
+
 if (!$auth->isLoggedIn()) {
-    if ($_SERVER['REQUEST_URI'] != '/CJ_Project/register.php') {
-        header("Location: /CJ_Project/login.php");
+    if ($_SERVER['REQUEST_URI'] != "/$PROJECTNAME/register.php") {
+        header("Location: /$PROJECTNAME/login.php");
     }
 }
 

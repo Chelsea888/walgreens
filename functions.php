@@ -6,45 +6,92 @@ require_once "classes.php";
  */
 
 
-function show_prescritpion($db, $rx_num,$prescriber_id)
+function get_prescritpion($db, $rx_num)
 {
-    $sql = "SELECT rx_num, cus_id, PR.first_name, PR.last_name, rx_written_date
-            FROM Prescription PN
-            LEFT JOIN Prescriber PR
-            ON PN.prescriber_id = PR.prescriber_id
-            where rx_num = ?";
+    $cus_firstn = "";
+    $cus_lastn = "";
+    $sql = "SELECT first_name, last_name FROM Customer C 
+            JOIN Prescription P ON C.cus_id = P.cus_id AND P.rx_num = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$rx_num]);
+    while($row=$stmt->fetch()) {
+        $cus_firstn = $row['first_name'];
+        $cus_lastn = $row['last_name'];
+    }
+
+    $doc_firstn = "";
+    $doc_lastn = "";
+    $sql = "SELECT first_name, last_name FROM Prescriber PR
+            JOIN Prescription PN ON PR.prescriber_id = PN.prescriber_id AND PN.rx_num = ?";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$rx_num]);
+    while($row=$stmt->fetch()) {
+        $doc_firstn = $row['first_name'];
+        $doc_lastn = $row['last_name'];
+    }
+
+    $sql = "SELECT rx_num, cus_id, rx_written_date
+            FROM Prescription
+            where rx_num = ? order by rx_written_date desc";
 
     $stmt = $db->prepare($sql);
     $stmt->execute([$rx_num]);
 
-    $prescriptions = array();
-
+    $pres_obj = null;
     while ($row = $stmt->fetch()) {
         $rx_num = $row['rx_num'];
-        $doc_lastn = $row['last_name'];
-        $doc_firstn = $row['first_name'];
         $rx_written_date = $row['rx_written_date'];
         $cusid = $row['cus_id'];
 
-        $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date,$prescriber_id);
+        $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date);
+        $pres_obj->doc_firstn = $doc_firstn;
+        $pres_obj->doc_lastn = $doc_lastn;
+        $pres_obj->cus_firstn = $cus_firstn;
+        $pres_obj->cus_lastn = $cus_lastn;
         $pres_obj->create_drug($db, $cusid);
-
-
-        array_push($prescriptions, $pres_obj);
     }
 
-    foreach ($prescriptions as $pres_obj) {
-        echo "<div>" . $pres_obj->rx_num . " generated on " .$pres_obj->rx_written_date.
-            " by Doctor " . $doc_firstn . " " . $doc_lastn . "</div>";
+    return $pres_obj;
 
-        foreach ($pres_obj->drugs as $drug) {
-            echo "<div>" . $drug->drug_name . " " . $drug->drug_stren . " $" . $drug->unit_price . "</div>";
-        }
+}
+
+function get_prescriptions_ready_to_order($db, $cusid) {
+    $sql = "SELECT rx_num, cus_id, rx_written_date FROM Prescription 
+            where rx_num not in (select rx_num from Order_Drug)
+            AND cus_id = $cusid
+            ORDER BY rx_written_date desc 
+            ";
+    $rows = $db->query($sql);
+
+    $prescriptions = array();
+    foreach ($rows as $row) {
+        $prescriptions[] = new Prescription($db, $row['rx_num'], $row['cus_id'], $row['rx_written_date']);
     }
+    return $prescriptions;
+}
+
+function display_customer_prescriptions($db, $cusid) {
+    // rx not in order
+
+    $sql = "SELECT rx_num, cus_id, rx_written_date FROM Prescription 
+            where rx_num not in (select rx_num from Order_Drug)
+            ORDER BY rx_written_date desc 
+            ";
+    $rows = $db->query($sql);
+
+    $prescriptions = array();
+    foreach ($rows as $row) {
+        $prescriptions[] = new Prescription($db, $row['rx_num'], $row['cus_id'], $row['rx_written_date']);
+    }
+
+    // rx in order delivered = null
+
+    // rx in order delivered
 }
 
 function show_prescritpions_toCustomer($db, $cusid)
 {
+    global $PROJECTNAME;
 
     $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
     echo "<form  method = 'post'>";
@@ -54,11 +101,8 @@ function show_prescritpions_toCustomer($db, $cusid)
     $count = $db->query($countsql)->fetchColumn();
 
     if ($count == 0) {
-
         echo "<div>" . getUserFullName($db, $cusid) . " You have no prescriptions.</div>";
     } else {
-
-
         echo "Hello " . get_username($db, $cusid) . "!</br>";
         $stmt = $db->query($sql);
         $prescriptions = array();
@@ -73,9 +117,9 @@ function show_prescritpions_toCustomer($db, $cusid)
             $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date, $prescriber_id);
             $pres_obj->create_drug($db, $cusid);
 
-
             array_push($prescriptions, $pres_obj);
         }
+
         echo "<h4>Your prescriptions are ready to order</h4>";
         foreach ($prescriptions as $pres_obj) {
             if (isInOrder($db, $pres_obj->rx_num) == 0) {
@@ -95,7 +139,6 @@ function show_prescritpions_toCustomer($db, $cusid)
         echo "<h4>The prescriptions are delivered</h4>";
         foreach ($prescriptions as $pres_obj) {
             if (isInOrder($db, $pres_obj->rx_num) == 1) {
-
                 echo "<div>" . $pres_obj->rx_num . " generated on " . $pres_obj->rx_written_date .
                     " by Doctor " . get_docname($db, $prescriber_id)[$prescriber_id][0] . " " .
                     get_docname($db, $prescriber_id)[$prescriber_id][1] . "</div>";
@@ -107,22 +150,21 @@ function show_prescritpions_toCustomer($db, $cusid)
         }
 
         if ($action == "Order Prescription") {
-
             echo "<div>";
             echo "<input type='hidden' name='action' value='review order' />";
             echo "<button type = 'submit' class='btn btn-dark'>Review my orders</button></div>";}
 
             if ($action == "review order") {
-                header("Location: /CJ_Project/review_order.php?");
+                header("Location: /$PROJECTNAME/review_order.php?");
                 exit;
                 echo "</form>";
             }
         }
-
 }
+
 function isInOrder($db, $rx_num){
     #$rxnum_inOrder = false;
-    $countsql = "select count(order.rx_num) from `order`,Prescription where order.rx_num =  '$rx_num'";
+    $countsql = "select count(\"Order\".rx_num) from \"Order\",Prescription where order.rx_num =  '$rx_num'";
     $count = $db->query($countsql)->fetchColumn();
     if ($count != 0) {
         return 1;
@@ -134,7 +176,7 @@ function order_Prescription($db,$rx_num){
     global $auth;
     $cusid = $auth->getUserId();
     $gen_datedate = date("Y-m-d H:i:s");
-        $req = $db->prepare("INSERT INTO `order` (cus_id,rx_num,gen_date) VALUES (:cus_id,:rx_num,:gen_date)");
+        $req = $db->prepare("INSERT INTO \"Order\" (cus_id,rx_num,gen_date) VALUES (:cus_id,:rx_num,:gen_date)");
         $req->execute(array(
             'cus_id'=>$cusid,
             'rx_num'=>$rx_num,
@@ -177,14 +219,31 @@ function get_username($db,$cusid){
         $last_name = $row['last_name'];
     }
     return "$first_name $last_name";
+}
+
+
+
+function getAddr($db,$cusid){
+    $stmt = $db->prepare("select Address_line_1, Address_line_2, addr_city,addr_state,zipcode from Customer where cus_id =?");
+
+    $stmt->execute([$cusid]);
+
+    while ($row = $stmt->fetch()){
+        $addr_line1 = $row['Address_line_1'];
+        $addr_line2 = $row['Address_line_2'];
+        $addr_city = $row['addr_city'];
+        $addr_state = $row['addr_state'];
+        $zipcode = $row['zipcode'];
     }
-
-
-
+    $addr = [$addr_line1,$addr_line2,$addr_city,$addr_state,$zipcode];
+    foreach ($addr as $value) {
+        echo $value." ";
+    }
+}
 
 function isDeliverer($db, $userid) {
     $res = $db->query("select count(*) from Deliverer where deli_id = " . $userid);
-    if ($res->fetchColumn() > 0) {
+    if ($res && $res->fetchColumn() > 0) {
         return true;
     } else {
         return false;
@@ -193,7 +252,7 @@ function isDeliverer($db, $userid) {
 
 function isPrescriber($db, $userid) {
     $res = $db->query("select count(*) from Prescriber where prescriber_id = " . $userid);
-    if ($res->fetchColumn() > 0) {
+    if ($res && $res->fetchColumn() > 0) {
         return true;
     } else {
         return false;
@@ -313,4 +372,55 @@ function addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $refills)
     return $rx_num;
 }
 
-?>
+function review_order($db, $cusid)
+{
+
+    $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
+    echo "<form  method = 'post'>";
+
+    $sql = "SELECT rx_num, prescriber_id, rx_written_date FROM Prescription where cus_id = $cusid";
+
+    echo "Hello " . get_username($db, $cusid) . "!&nbsp;&nbsp;Your order summary: </br>";
+    $stmt = $db->query($sql);
+    $prescriptions = array();
+    get_refillnum($db, $cusid);
+    while ($row = $stmt->fetch()) {
+        $rx_num = $row['rx_num'];
+        $rx_written_date = $row['rx_written_date'];
+        $prescriber_id = $row['prescriber_id'];
+
+        $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date, $prescriber_id);
+        $pres_obj->create_drug($db, $cusid);
+
+
+        array_push($prescriptions, $pres_obj);
+    }
+    $total = 0;
+    foreach ($prescriptions as $pres_obj) {
+        if (isInOrder($db, $pres_obj->rx_num) == 0) {
+
+            echo "<div>" . $pres_obj->rx_num . " generated on " . $pres_obj->rx_written_date .
+                " by Doctor " . get_docname($db, $prescriber_id)[$prescriber_id][0] . " " .
+                get_docname($db, $prescriber_id)[$prescriber_id][1] . "</div>";
+
+            foreach ($pres_obj->drugs as $drug) {
+                echo "<div>" . $drug->drug_name . " " . $drug->drug_stren . " $" . $drug->unit_price .
+                    " Refill:" . get_refillnum($db, $cusid)[2] . "</div>";
+                $total += $drug->unit_price++;
+            }
+            echo "<strong>Total: $$total</strong></br>";
+            echo "<strong>Out to insurance:</strong></br>";
+            echo "<strong>Patient owes:</strong></br>";
+            echo "<div>";
+            echo "<input type='hidden' name='action' value='Order Prescription' />";
+            echo "<button type = 'submit' class='btn btn-dark'>Ready to Pay</button></div>";
+        }
+    }
+}
+
+# show orders
+function show_orders($db) {
+//    $sql = "select * from "
+//    $db->pre
+
+}

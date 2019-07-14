@@ -34,8 +34,16 @@ if ($action == 'add') {
         }
     }
 
-//    header("Location: /CJ_Project/");
+//    header("Location: /$PROJECTNAME/");
 } else {
+    ?>
+
+<div class="container marketing">
+
+    <div class="row pt-5 pb-5">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+    <?php
     if ($usertype == 'prescriber') {
         ?>
         <h3>Prescriber</h3>
@@ -79,7 +87,7 @@ if ($action == 'add') {
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Add" class="btn float-right login_btn">
+                <input type="submit" value="Add" class="btn btn-primary float-right login_btn">
             </div>
         </form>
 
@@ -117,12 +125,18 @@ if ($action == 'add') {
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Add" class="btn float-right login_btn">
+                <input type="submit" value="Add" class="btn btn-primary float-right login_btn">
             </div>
         </form>
         <?php
     }
 
 }
-
+?>
+      </div>
+        <div class="col-lg-3"></div>
+    </div>
+</div>
+<?php
+require "footer.php";
 ?>

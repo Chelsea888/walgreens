@@ -11,13 +11,15 @@
 
 require __DIR__.'/vendor/autoload.php';
 
+$PROJECTNAME = "walgreens";
+
 $db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
 #$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
 if (!$auth->isLoggedIn()) {
-    if ($_SERVER['REQUEST_URI'] != '/CJ_Project/register.php') {
-        header("Location: /CJ_Project/login.php");
+    if ($_SERVER['REQUEST_URI'] != "/$PROJECTNAME/register.php") {
+        header("Location: /$PROJECTNAME/login.php");
     }
 }
 
@@ -31,9 +33,6 @@ $cartSessionStore = new SessionStore();
 
 $cart = new Cart($cartid, $cartSessionStore);
 
-if($cart->totalItems() > 0) {
-    $cart->restore();
-}
 ?>
 <!doctype html>
 <html lang="en">
@@ -73,14 +72,14 @@ if($cart->totalItems() > 0) {
 <body>
 <header>
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="/CJ_Project/">Walgreens X GWU Drug Store</a>
+        <a class="navbar-brand" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/CJ_Project/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="links.php">Quick Links</a>
@@ -89,14 +88,17 @@ if($cart->totalItems() > 0) {
 <!--                    <a class="nav-link disabled" href="#">Disabled</a>-->
 <!--                </li>-->
             </ul>
-            <form class="form-inline mt-2 mt-md-0">
-                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+            <form class="form-inline mt-2 mt-md-0 col-lg-6">
+                <input class="form-control mr-sm-2 input-lg col-lg-10" type="text" placeholder="Search for RX number or Drug Name" aria-label="Search">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
             </form>
             <?php
             if ($auth->isLoggedIn()) {
             ?>
             <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="cart.php"><img class="img-fluid" style="width: 40px;height: 30px" src="shopping_cart_PNG4.png"></a>
+                </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="profile.php"><?php echo getUserFullName($db, $auth->getUserId()); ?><span class="sr-only">(current)</span></a>
                 </li>

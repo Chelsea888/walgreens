@@ -141,8 +141,8 @@ if ($action == 'update') {
 
   <div class="container marketing">
 
-    <div class="row">
-        <div class="col-lg-3"></div>
+      <div class="row pt-5 pb-5">
+      <div class="col-lg-3"></div>
       <div class="col-lg-6">
 
 <?php
@@ -238,7 +238,7 @@ if (isPrescriber($db, $userid)) {
             echo "</tr>";
         }
         echo "</table>";
-        echo "<div><button type='button' class='btn btn-dark'><a href='profile.php?userid=$userid&edit=1'>Edit</a></button></div>";
+        echo "<div><a class='btn btn-primary' href='profile.php?userid=$userid&edit=1'>Edit Profile</a></div>";
     }
 }
 
@@ -313,7 +313,7 @@ if (isDeliverer($db, $userid)) {
             echo "</tr>";
         }
         echo "</table>";
-        echo "<div><button type='button' class='btn btn-dark'><a href='profile.php?userid=$userid&edit=1'>Edit</a></button></div>";
+        echo "<div><a class='btn btn-primary' href='profile.php?userid=$userid&edit=1'>Edit</a></div>";
     }
 }
 
@@ -469,14 +469,14 @@ if (isCustomer($db, $userid)) {
             echo "</tr>";
         }
         echo "</table>";
-        echo "<div><button type='button' class='btn btn-dark'><a href='profile.php?userid=$userid&edit=1'>Edit</a></button></div>";
+        echo "<div><a class='btn btn-primary' href='profile.php?userid=$userid&edit=1'>Edit Profile</a></div>";
     }
 }
 ?>
-      </div><!-- /.col-lg-4 -->
+      </div>
         <div class="col-lg-3"></div>
-    </div><!-- /.row -->
-</div><!-- /.row -->
+    </div>
+</div>
 
 <link id="bsdp-css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
