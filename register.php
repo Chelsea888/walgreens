@@ -1,7 +1,7 @@
 <?php
 require "header.php";
 ?>
-    <div class="container marketing">
+    <div class="container marketing mt-lg-5">
 
         <div class="row">
             <div class="col-lg-3"></div>
@@ -196,7 +196,7 @@ if (isset($_REQUEST['email']) && isset($_REQUEST['password'])) {
     echo "</tr>";
 
     echo "</table>";
-    echo "<div><button type='submit' class='btn btn-dark'>Register</button></div>";
+    echo "<div><button type='submit' class='btn btn-primary'>Register</button></div>";
     echo "</form>";
 }
 

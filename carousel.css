@@ -38,6 +38,10 @@ body {
 /* MARKETING CONTENT
 -------------------------------------------------- */
 
+.marketing {
+    min-height: 768px;
+}
+
 /* Center align the text within the three columns below the carousel */
 .marketing .col-lg-4 {
     margin-bottom: 1.5rem;
@@ -88,3 +92,4 @@ body {
         margin-top: 7rem;
     }
 }
+

@@ -5,6 +5,27 @@ require "header.php";
 
 <?php
 $cusid = $auth->getUserId();
+try {
+  $cart->restore();
+} catch (Exception $e) {
+}
+
+$itemAmount = 0;
+
+if ($cart->totalItems() > 0) {
+    foreach ($cart->all() as $item) {
+        $itemAmount += $item->qty * $item->price;
+    }
+}
+
+$itemAmount = round($itemAmount, 2);
+$insuranceCoverage = round($itemAmount * 0.5, 2);
+$totalBeforeTax = round($itemAmount - $insuranceCoverage, 2);
+$tax = round($totalBeforeTax * .0575, 2);
+$shipping = round($totalBeforeTax * 0.05, 2);
+$orderTotal = round($totalBeforeTax + $tax + $shipping, 2);
+
+?>
 
 ?>
 <div class="container marketing">
@@ -27,27 +48,30 @@ $cusid = $auth->getUserId();
                     <table class="table">
                         <tr>
                             <td>Items:</td>
-                            <td>$</td>
+                            <td>$<?php echo $itemAmount; ?></td>
                         </tr>
                         <tr>
-                            <td>Shipping:</td>
-                            <td>$</td>
+                            <td>Insurance Coverage:</td>
+                            <td>-$<?php echo $insuranceCoverage; ?></td>
                         </tr>
                         <tr>
                             <td>Total before tax:</td>
-                            <td>$</td>
+                            <td>$<?php echo $totalBeforeTax; ?></td>
                         </tr>
                         <tr>
                             <td>Estimated tax to be collected:</td>
-                            <td>$</td>
+                            <td>$<?php echo $tax; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Shipping:</td>
+                            <td>$<?php echo $shipping; ?></td>
                         </tr>
                         <tr>
                             <td><b>Order Total</b></td>
-                            <td><b>$</b></td>
+                            <td><b>$<?php echo $orderTotal ?></b></td>
                         </tr>
                     </table>
-                    <a class="btn btn-primary" href="placeorder.php">Place Your Order</a>
-
+                    <a class="btn btn-primary" href="placeorder.php">Check Out</a>
                 </div>
             </div>
         </div>
@@ -57,12 +81,6 @@ $cusid = $auth->getUserId();
       <div class="row pt-5 pb-5">
           <div class="col-lg-3"></div>
           <div class="col-lg-6">
-          <?php
-          try {
-              $cart->restore();
-          } catch (Exception $e) {
-          }
-?>
           <div class="card">
               <table class="table">
                   <thead>
@@ -75,7 +93,8 @@ $cusid = $auth->getUserId();
 <?php
                   if ($cart->totalItems() > 0) {
                       foreach ($cart->all() as $item) {
-                          echo "<tr><td>$item->name</td><td>RX-Num</td><td>$item->quantity</td><td>$item->price</td> </tr>";
+                          $drug_name = $drug_array[$item->NDC];
+                          echo "<tr><td>$drug_name</td><td>$item->rx_num</td><td>$item->qty</td><td>$item->price</td> </tr>";
                       }
                   }
                   ?>

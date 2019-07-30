@@ -27,16 +27,24 @@ require "header.php";
 <?php
                   if ($cart->totalItems() > 0) {
                       foreach ($cart->all() as $item) {
-                          echo "<tr><td>$item->name</td><td>$item->quantity</td><td>$item->price</td> </tr>";
+                          $drug_name = $drug_array[$item->NDC];
+                          echo "<tr><td>$drug_name</td><td>$item->rx_num</td><td>$item->qty</td><td>$item->price</td> </tr>";
                       }
                   }
                   ?>
                   </tbody>
               </table>
+
+              <div class="row">
+                  <div class="col">
+                      <a class="btn btn-primary" href="checkout.php">Proceed to Checkout</a>
+                  </div>
+                  <div class="col">
+                      <a class="btn btn-primary" href="clearcart.php">Clear Cart</a>
+                  </div>
+              </div>
           </div>
-          <div class="card-row p-2">
-              <a class="btn btn-primary" href="checkout.php">Proceed to Checkout</a>
-          </div>
+
           <?php
           ?>
       </div>

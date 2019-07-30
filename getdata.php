@@ -11,8 +11,8 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
-#$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
+#$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
+$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
 $PROJECTNAME = "walgreens";
@@ -53,14 +53,12 @@ if ($datatype == 'drug') {
 } elseif ($datatype == 'gwid') {
     $term = $_REQUEST['term'];
     $output = array();
-    $sql = "SELECT gwid FROM Customer where gwid like ?";
+    $sql = "SELECT gwid, first_name, last_name FROM Customer where gwid like ? or first_name like ? or last_name like ?";
     $stmt = $db->prepare($sql);
-    $stmt->execute(["%$term%"]);
+    $stmt->execute(["%$term%", "%$term%", "%$term%"]);
 
     while ($row = $stmt->fetch()) {
-        $output[] = $row['gwid'];
+        $output[] = "$row[first_name] $row[last_name] | $row[gwid]";
     }
     echo json_encode($output);
 }
-
-

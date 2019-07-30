@@ -59,8 +59,8 @@ if ($action == 'update') {
         $last_name = $_REQUEST['last_name'];
         $DoB = $_REQUEST['DoB'];
         $insurance = $_REQUEST['insurance'];
-        $addr_street = $_REQUEST['addr_street'];
-        $addr_apt = $_REQUEST['addr_apt'];
+        $Address_line_1 = $_REQUEST['Address_line_1'];
+        $Address_line_2 = $_REQUEST['Address_line_2'];
         $addr_city = $_REQUEST['addr_city'];
         $addr_state = $_REQUEST['addr_state'];
         $zipcode = $_REQUEST['zipcode'];
@@ -82,8 +82,8 @@ if ($action == 'update') {
                                             last_name   = :last_name,
                                             DoB         = :DoB,
                                             insurance   = :insurance,
-                                            addr_street = :addr_street,
-                                            addr_apt    = :addr_apt,
+                                            Address_line_1 = :Address_line_1,
+                                            Address_line_2    = :Address_line_2,
                                             addr_city   = :addr_city,
                                             addr_state  = :addr_state,
                                             zipcode     = :zipcode,
@@ -96,8 +96,8 @@ if ($action == 'update') {
                 'last_name'   => $last_name,
                 'DoB'         => date("Y-m-d H:i:s", strtotime($DoB)),
                 'insurance'   => $insurance,
-                'addr_street' => $addr_street,
-                'addr_apt'    => $addr_apt,
+                'Address_line_1' => $Address_line_1,
+                'Address_line_2'    => $Address_line_2,
                 'addr_city'   => $addr_city,
                 'addr_state'  => $addr_state,
                 'zipcode'     => $zipcode,
@@ -106,7 +106,7 @@ if ($action == 'update') {
         } else {
             $req = $db->prepare("INSERT INTO Customer (
                                                 cus_id, gwid, first_name, last_name, DoB,
-                                                insurance, addr_street, addr_apt, addr_city,
+                                                insurance, Address_line_1, Address_line_2, addr_city,
                                                 addr_state, zipcode, phone) VALUES (
                                                     :id,
                                                     :gwid,
@@ -114,8 +114,8 @@ if ($action == 'update') {
                                                     :last_name,
                                                     :DoB,
                                                     :insurance,
-                                                    :addr_street,
-                                                    :addr_apt,
+                                                    :Address_line_1,
+                                                    :Address_line_2,
                                                     :addr_city,
                                                     :addr_state,
                                                     :zipcode,
@@ -127,8 +127,8 @@ if ($action == 'update') {
                 'last_name'   => $last_name,
                 'DoB'         => date("Y-m-d H:i:s", strtotime($DoB)),
                 'insurance'   => $insurance,
-                'addr_street' => $addr_street,
-                'addr_apt'    => $addr_apt,
+                'Address_line_1' => $Address_line_1,
+                'Address_line_2'    => $Address_line_2,
                 'addr_city'   => $addr_city,
                 'addr_state'  => $addr_state,
                 'zipcode'     => $zipcode,
@@ -318,8 +318,8 @@ if (isDeliverer($db, $userid)) {
 }
 
 if (isCustomer($db, $userid)) {
-    $sql = "SELECT users.email, users.username, C.gwid, C.first_name, C.last_name, C.DoB, C.insurance, C.addr_street, 
-            C.addr_apt, C.addr_city, C.addr_state, C.zipcode, C.phone
+    $sql = "SELECT users.email, users.username, C.gwid, C.first_name, C.last_name, C.DoB, C.insurance, C.Address_line_1, 
+            C.Address_line_2, C.Address_line_2, C.addr_city, C.addr_state, C.zipcode, C.phone
             FROM users
             LEFT JOIN Customer C ON C.cus_id = users.id
             where users.id = " . $userid;
@@ -367,13 +367,13 @@ if (isCustomer($db, $userid)) {
             echo "</tr>";
 
             echo "<tr>";
-            echo "<td>Street</td>";
-            echo "<td><input type='text' name='addr_street' value='$row[addr_street]' /></td>";
+            echo "<td>Address Line 1</td>";
+            echo "<td><input type='text' name='Address_line_1' value='$row[Address_line_1]' /></td>";
             echo "</tr>";
 
             echo "<tr>";
-            echo "<td>Apt</td>";
-            echo "<td><input type='text' name='addr_apt' value='$row[addr_apt]' /></td>";
+            echo "<td>Address Line 2</td>";
+            echo "<td><input type='text' name='Address_line_2' value='$row[Address_line_2]' /></td>";
             echo "</tr>";
 
             echo "<tr>";
@@ -439,13 +439,13 @@ if (isCustomer($db, $userid)) {
             echo "</tr>";
 
             echo "<tr>";
-            echo "<td>Street</td>";
-            echo "<td>$row[addr_street]</td>";
+            echo "<td>Address Line 1</td>";
+            echo "<td>$row[Address_line_1]</td>";
             echo "</tr>";
 
             echo "<tr>";
-            echo "<td>Apt</td>";
-            echo "<td>$row[addr_apt]</td>";
+            echo "<td>Address Line 2</td>";
+            echo "<td>$row[Address_line_2]</td>";
             echo "</tr>";
 
             echo "<tr>";

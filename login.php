@@ -11,8 +11,8 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
-#$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
+#$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
+$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
 $PROJECTNAME = "walgreens";
@@ -26,7 +26,6 @@ require_once "functions.php";
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <title>Walgreens X GWU Drug Store</title>
@@ -56,45 +55,40 @@ require_once "functions.php";
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
+    <nav class="navbar navbar-expand-md navbar-light fixed-top " style="background-color: #5f3f70;">
+        <a class="navbar-brand" style = "color: white" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" style = "color: white" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="links.php">Quick Links</a>
-                </li>
+
 <!--                <li class="nav-item">-->
 <!--                    <a class="nav-link disabled" href="#">Disabled</a>-->
 <!--                </li>-->
+
             </ul>
-            <form class="form-inline mt-2 mt-md-0">
-                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
             <?php
             if ($auth->isLoggedIn()) {
             ?>
             <ul class="navbar-nav">
                 <li class="nav-item active">
-                    <a class="nav-link" href="profile.php"><?php echo getUserFullName($db, $auth->getUserId()); ?><span class="sr-only">(current)</span></a>
+                    <a class="nav-link" style = "color: white" href="profile.php"><?php echo getUserFullName($db, $auth->getUserId()); ?><span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="logout.php">Log Out</a>
+                    <a class="nav-link" style = "color: white" href="logout.php">Log Out</a>
                 </li>
             </ul>
             <?php } else { ?>
                 <ul class="navbar-nav">
                     <li class="nav-item active">
-                        <a class="nav-link" href="login.php">Log In</a>
+                        <a class="nav-link" style = "color: white" href="login.php">Log In</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="register.php">Register</a>
+                        <a class="nav-link" style = "color: white" href="register.php">Register</a>
                     </li>
                 </ul>
             <?php
@@ -102,7 +96,10 @@ require_once "functions.php";
         </div>
     </nav>
 </header>
+
+
 <main role="main">
+
 <?php
 if (!$auth->isLoggedIn()) {
     if (isset($_REQUEST['email']) && isset($_REQUEST['password'])) {
@@ -122,7 +119,7 @@ if (!$auth->isLoggedIn()) {
         }
     } else {
         ?>
-        <div class="container">
+        <div class="container marketing mt-lg-5">
             <div class="d-flex justify-content-center h-100">
                 <div class="card">
                     <div class="card-header">
@@ -148,7 +145,7 @@ if (!$auth->isLoggedIn()) {
                                 <input name="remember" type="checkbox">&nbsp; Remember Me
                             </div>
                             <div class="form-group">
-                                <input type="submit" value="Login" class="btn float-right login_btn">
+                                <input type="submit" value="Login" class="btn btn-primary float-right login_btn">
                             </div>
                         </form>
                     </div>
@@ -169,3 +166,4 @@ if (!$auth->isLoggedIn()) {
 } else {
     header("Location: /$PROJECTNAME/");
 }
+?>

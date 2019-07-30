@@ -4,6 +4,10 @@
  * @param $cusid
  */
 require "header.php";
+
+if (!isPrescriber($db, $auth->getUserId())) {
+    header("Location: /$PROJECTNAME/");
+}
 ?>
 <div class="container marketing">
 
@@ -12,25 +16,15 @@ require "header.php";
         <div class="col-lg-8">
 <?php
 
-/*function showDrugCategory($db)
-{
-    $sql = "select distinct category from drug_cate";
-
-    $stmt = $db->query($sql);
-    while ($row = $stmt->fetch()) {
-        $category = $row['category'];
-        echo "<option>" . $category . "</option>";
-    }
-}*/
-
 $gwid = isset($_REQUEST['gwid']) ? $_REQUEST['gwid'] : '';
 $drugs = isset($_REQUEST['drugs']) ? $_REQUEST['drugs']: array();
+$qtys = isset($_REQUEST['qtys']) ? $_REQUEST['qtys'] : array();
 $refills = isset($_REQUEST['refills']) ? $_REQUEST['refills'] : array();
 $action = isset($_REQUEST['action']) ? $_REQUEST['action']: '';
 
 if ($action == 'add_prescription') {
     $prescriber_id = $auth->getUserId();
-    $rx_num = addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $refills);
+    $rx_num = addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $qtys, $refills);
     header("Location: /$PROJECTNAME/myprescriptions.php?rx_num=$rx_num");
     #addPrescription_drug($db,$drug_name);
 } else {
@@ -42,7 +36,7 @@ if ($action == 'add_prescription') {
 
                 <div class="form-row">
                 <div class = 'form-group'>
-                    <label for='gwid'>GWID:&nbsp; </label>
+                    <label id='gwidlabel' for='gwid'>GWID:&nbsp; </label>
                     <input type='text' class ='form-control' id='gwid' name='gwid' placeholder = 'Input patient GWID' />
                 </div>
                 </div>
@@ -73,6 +67,15 @@ if ($action == 'add_prescription') {
 
                     <div class="row">
                         <div class="col-lg-4">
+                            <label for="qty">Quantity:</label>
+                        </div>
+                        <div class="col-lg-8">
+                            <input id='qty' type = 'number',min = '1' max = '100' oninput="this.value = Math.abs(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-4">
                             <label for="refill">Refill Option:</label>
                         </div>
                         <div class="col-lg-8">
@@ -96,6 +99,7 @@ if ($action == 'add_prescription') {
 
                 <div>
                     <button type = 'submit' class='btn btn-primary'>Add Prescription</button>
+                    <input type = 'button'class='btn btn-warning' value = 'Reset' onclick = 'refresh();' >
                 </div>
             </form>
         </div>
@@ -130,11 +134,12 @@ if ($action == 'add_prescription') {
                     var div1 = $('<div>').attr({
                         class : "col"
                     });
-                    div1.append($('<label>').text('Drug'));
+                    var drugstr = $( "#drug option:selected" ).val();
+                    div1.append($('<label>').text('Drug: ' + drugstr.substring(drugstr.indexOf('||')+2)));
                     div1.append($('<input>').attr({
                         type: 'input',
                         name: 'drugs[]',
-                        value: $( "#drug option:selected" ).val()
+                        value: drugstr.substring(0, drugstr.indexOf('||'))
                     }));
 
                     div.append(div1);
@@ -142,14 +147,26 @@ if ($action == 'add_prescription') {
                     var div2 =  $('<div>').attr({
                         class : "col"
                     });
-                    div2.append($('<label>').text('Refill'));
+                    div2.append($('<label>').text('Quantity'));
                     div2.append($('<input>').attr({
+                        type: 'input',
+                        name: 'qtys[]',
+                        value: $( "#qty" ).val()
+                    }));
+
+                    div.append(div2);
+
+                    var div3 =  $('<div>').attr({
+                        class : "col"
+                    });
+                    div3.append($('<label>').text('Refill'));
+                    div3.append($('<input>').attr({
                         type: 'input',
                         name: 'refills[]',
                         value: $( "#refill" ).val()
                     }));
 
-                    div.append(div2);
+                    div.append(div3);
 
                     $('#add_drug').parent().parent().after(div);
                 }
@@ -166,13 +183,20 @@ if ($action == 'add_prescription') {
 
                     $.each(drugs, function(key,value) {
                         $('#drug').append($("<option></option>")
-                            .attr("value", key).text(value));
+                            .attr("value", key+ '||' + value).text(value));
                     });
                 })
             });
 
             // autocomplete gwid
             $("input#gwid").autocomplete({
+                select: function( event, ui ) {
+                    var w = ui.item.value;
+                    var name = w.substring(0, w.lastIndexOf(' | '));
+                    $('#gwid').val(w.substring(w.lastIndexOf(' ')+1));
+                    $('#gwidlabel').text(name + "'s" + " GWID:")
+                    return false;
+                },
                 source: function( request, response ) {
                     $.ajax( {
                         url: "getdata.php",
@@ -189,6 +213,10 @@ if ($action == 'add_prescription') {
                 minLength: 0
             }).bind('focus', function(){ $(this).autocomplete("search"); } );
         });
+        //refresh page
+        function refresh(){
+            location.reload();
+        }
     </script>
 
 <?php

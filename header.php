@@ -11,10 +11,12 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-$PROJECTNAME = "walgreens";
 
-$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
-#$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
+$PROJECTNAME= "walgreens";
+
+
+#$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
+$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
 if (!$auth->isLoggedIn()) {
@@ -33,7 +35,17 @@ $cartSessionStore = new SessionStore();
 
 $cart = new Cart($cartid, $cartSessionStore);
 
+#generate an array 'NDC'=>'drug_name'
+$drug_array =[];
+$sql = "select  NDC, drug_name from Drug";
+$res = $db->query($sql);
+
+foreach ($res as $value){
+    $drug_array[$value['NDC']] = $value['drug_name'];
+}
+
 ?>
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -71,48 +83,61 @@ $cart = new Cart($cartid, $cartSessionStore);
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
+    <nav class="navbar navbar-expand-md navbar-light fixed-top " style="background-color: #5f3f70;">
+        <a class="navbar-brand" style = "color: white" href="/<?php echo $PROJECTNAME; ?>/">Walgreens X GWU Drug Store</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" style = "color: white" href="/<?php echo $PROJECTNAME; ?>/">Home <span class="sr-only">(current)</span></a>
                 </li>
+                <!--
                 <li class="nav-item">
-                    <a class="nav-link" href="links.php">Quick Links</a>
+                    <a class="nav-link" style = "color: darkgray" href="links.php">Quick Links</a>
                 </li>
+                -->
 <!--                <li class="nav-item">-->
 <!--                    <a class="nav-link disabled" href="#">Disabled</a>-->
 <!--                </li>-->
             </ul>
-            <form class="form-inline mt-2 mt-md-0 col-lg-6">
-                <input class="form-control mr-sm-2 input-lg col-lg-10" type="text" placeholder="Search for RX number or Drug Name" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
+            <?php if ($auth->isLoggedIn() && isCustomer($db, $auth->getUserId())) {
+                ?>
+                <form class="form-inline mt-2 mt-md-0 col-lg-6" action="search.php">
+                    <input class="form-control mr-sm-2 input-lg col-lg-10" type="text" name="query" placeholder="Search for RX Number or Drug Name" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+            <?php
+            }
+            ?>
             <?php
             if ($auth->isLoggedIn()) {
             ?>
             <ul class="navbar-nav">
+                <?php
+                if (isCustomer($db, $auth->getUserId())) {
+                    ?>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="cart.php"><img class="img-fluid" style="width: 40px;height: 30px" src="shopping_cart_PNG4.png"></a>
+                    </li>
+                <?php
+                }
+                ?>
                 <li class="nav-item active">
-                    <a class="nav-link" href="cart.php"><img class="img-fluid" style="width: 40px;height: 30px" src="shopping_cart_PNG4.png"></a>
-                </li>
-                <li class="nav-item active">
-                    <a class="nav-link" href="profile.php"><?php echo getUserFullName($db, $auth->getUserId()); ?><span class="sr-only">(current)</span></a>
+                    <a class="nav-link" style = "color: white" href="profile.php"><?php echo getUserFullName($db, $auth->getUserId()); ?><span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="logout.php">Log Out</a>
+                    <a class="nav-link" style = "color: white" href="logout.php">Log Out</a>
                 </li>
             </ul>
             <?php } else { ?>
                 <ul class="navbar-nav">
                     <li class="nav-item active">
-                        <a class="nav-link" href="login.php">Log In</a>
+                        <a class="nav-link" style = "color: white" href="login.php">Log In</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="register.php">Register</a>
+                        <a class="nav-link" style = "color: white" href="register.php">Register</a>
                     </li>
                 </ul>
             <?php
@@ -121,4 +146,3 @@ $cart = new Cart($cartid, $cartSessionStore);
     </nav>
 </header>
 <main role="main">
-

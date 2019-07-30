@@ -43,12 +43,11 @@ function get_prescritpion($db, $rx_num)
         $rx_written_date = $row['rx_written_date'];
         $cusid = $row['cus_id'];
 
-        $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date);
+        $pres_obj = new Prescription($db, $rx_num, $cusid, $rx_written_date);
         $pres_obj->doc_firstn = $doc_firstn;
         $pres_obj->doc_lastn = $doc_lastn;
         $pres_obj->cus_firstn = $cus_firstn;
         $pres_obj->cus_lastn = $cus_lastn;
-        $pres_obj->create_drug($db, $cusid);
     }
 
     return $pres_obj;
@@ -69,6 +68,65 @@ function get_prescriptions_ready_to_order($db, $cusid) {
     }
     return $prescriptions;
 }
+
+function get_ordered_prescriptions($db, $cusid) {
+    $sql = "SELECT Prescription.rx_num, Prescription.cus_id, 
+                Prescription.rx_written_date FROM Prescription 
+            JOIN Order_Drug ON Prescription.rx_num = Order_Drug.rx_num
+            JOIN `Order` ON `Order`.order_id = Order_Drug.order_id
+            where Prescription.rx_num in (select rx_num from Order_Drug)
+            AND Prescription.cus_id = $cusid
+            AND `Order`.deliver_date IS NULL
+            ORDER BY rx_written_date desc 
+            ";
+    $rows = $db->query($sql);
+
+    $prescriptions = array();
+    foreach ($rows as $row) {
+        $prescriptions[] = new Prescription($db, $row['rx_num'], $row['cus_id'], $row['rx_written_date']);
+    }
+    return $prescriptions;
+}
+
+function get_delivered_prescriptions($db, $cusid) {
+    /*
+    $sql = "SELECT Prescription.rx_num, Prescription.cus_id, 
+                Prescription.rx_written_date FROM Prescription 
+            JOIN Order_Drug ON Prescription.rx_num = Order_Drug.rx_num
+            JOIN `Order` ON `Order`.order_id = Order_Drug.order_id
+            where Prescription.rx_num in (select rx_num from Order_Drug)
+            AND Prescription.cus_id = $cusid
+            AND `Order`.deliver_date IS NOT NULL
+            ORDER BY rx_written_date desc 
+            ";
+    */
+    $sql = "SELECT Prescription.rx_num, Prescription.cus_id, 
+                Prescription.rx_written_date 
+            FROM Prescription 
+            where Prescription.cus_id = $cusid
+            AND Prescription.rx_num IN (SELECT rx_num FROM `Order` WHERE deliver_date IS NOT NULL)
+            ORDER BY rx_written_date desc ";
+    $rows = $db->query($sql);
+
+    $prescriptions = array();
+    foreach ($rows as $row) {
+        $prescriptions[] = new Prescription($db, $row['rx_num'], $row['cus_id'], $row['rx_written_date']);
+    }
+    return $prescriptions;
+}
+
+function prescription_has_refill($db, $rx_num) {
+    $sql = "SELECT count(*) FROM Prescription_drug WHERE rx_num = ? AND refill > refilled";
+    $stmt = $db->prepare($sql);
+    $stmt->execute([$rx_num]);
+    $hasRefill = false;
+    while($row=$stmt->fetch()) {
+        $hasRefill = true;
+        break;
+    }
+    return $hasRefill;
+}
+
 
 function display_customer_prescriptions($db, $cusid) {
     // rx not in order
@@ -114,8 +172,7 @@ function show_prescritpions_toCustomer($db, $cusid)
             $rx_written_date = $row['rx_written_date'];
             $prescriber_id = $row['prescriber_id'];
 
-            $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date, $prescriber_id);
-            $pres_obj->create_drug($db, $cusid);
+            $pres_obj = new Prescription($db, $rx_num, $cusid, $rx_written_date);
 
             array_push($prescriptions, $pres_obj);
         }
@@ -221,7 +278,14 @@ function get_username($db,$cusid){
     return "$first_name $last_name";
 }
 
-
+function get_deliname($db,$delid){
+    $stmt= $db->query("select first_n, last_n from Deliverer where deli_id=$delid");
+    while (($row = $stmt->fetch())){
+        $first_name = $row['first_n'];
+        $last_name = $row['last_n'];
+    }
+    return "$first_name $last_name";
+}
 
 function getAddr($db,$cusid){
     $stmt = $db->prepare("select Address_line_1, Address_line_2, addr_city,addr_state,zipcode from Customer where cus_id =?");
@@ -251,7 +315,7 @@ function isDeliverer($db, $userid) {
 }
 
 function isPrescriber($db, $userid) {
-    $res = $db->query("select count(*) from Prescriber where prescriber_id = " . $userid);
+    $res = $db->query("select count(*) from Prescriber where prescriber_id <> 20 and prescriber_id = " . $userid);
     if ($res && $res->fetchColumn() > 0) {
         return true;
     } else {
@@ -259,8 +323,17 @@ function isPrescriber($db, $userid) {
     }
 }
 
+function isManager($userid){
+
+    if ($userid == 20) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function isCustomer($db, $userid) {
-    if (!isDeliverer($db, $userid) && !(isPrescriber($db, $userid))) {
+    if (!isDeliverer($db, $userid) && !(isPrescriber($db, $userid))&& !(isManager($userid))) {
         return true;
     } else {
         return false;
@@ -346,7 +419,7 @@ function getCus_Id($db,$gwid)
     return $cus_id;
 }
 
-function addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $refills)
+function addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $qtys, $refills)
 {
     $rx_num = generateRXnum($db);
     $cus_id = getCus_Id($db, $gwid);
@@ -365,9 +438,9 @@ function addPrescription_cus($db, $prescriber_id, $gwid, $drugs, $refills)
         'rx_written_date' => $rx_written_date));
 
     for($i=0; $i < count($drugs); $i++) {
-        $sql = "INSERT INTO Prescription_drug (rx_num, NDC, refill) VALUES (:rx_num, :NDC, :refill)";
+        $sql = "INSERT INTO Prescription_drug (rx_num, NDC, qty, refill) VALUES (:rx_num, :NDC, :qty, :refill)";
         $stmt = $db->prepare($sql);
-        $stmt->execute(array('rx_num'=>$rx_num, 'NDC'=>$drugs[$i], 'refill'=>$refills[$i]));
+        $stmt->execute(array('rx_num'=>$rx_num, 'NDC'=>$drugs[$i], 'qty' => $qtys[$i], 'refill'=>$refills[$i]));
     }
     return $rx_num;
 }
@@ -389,8 +462,7 @@ function review_order($db, $cusid)
         $rx_written_date = $row['rx_written_date'];
         $prescriber_id = $row['prescriber_id'];
 
-        $pres_obj = new Prescription($rx_num, $cusid, $rx_written_date, $prescriber_id);
-        $pres_obj->create_drug($db, $cusid);
+        $pres_obj = new Prescription($db, $rx_num, $cusid, $rx_written_date);
 
 
         array_push($prescriptions, $pres_obj);
@@ -417,10 +489,60 @@ function review_order($db, $cusid)
         }
     }
 }
+function getCusAddr($db){
+
+    $stmt = $db->query("select `Order`.order_id, C.first_name, C.last_name, C.Address_line_1, C.Address_line_2, 
+    C.addr_city,C.addr_state,C.zipcode from Customer C left join `Order`
+    on Order.cus_id = C.cus_id where order_id is not null and Order.deli_id is null");
+    $cusAddr=$stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $cusAddr;
+    }
+function showOrdersToDeli($db)
+{
+    $cusAddr = getCusAddr($db);
+
+    echo "<form method = 'post' action ='pick_order.php' >";
+    echo "<legend>Please select the orders to deliver:</legend>";
+    echo "<table class='table'><tr><th>Selection</th><th>Order Number</th><th>Customer Name</th><th>Customer Address</th></tr>";
+    foreach ($cusAddr as $value) {
+        echo "<tr><td><input type = 'checkbox' class='order-row' name = 'del_order[]' value = '".$value['order_id']."'><td>".$value['order_id'].
+            "</td><td>".$value['first_name'] ." ".$value['last_name']."</td><td>".$value['Address_line_1'] ." ".$value['Address_line_2'] ." ".
+            $value['addr_city'] ." ". $value['addr_state']."</td></tr>";
+    }echo  "</table><input type = 'button' class = 'btn btn-warning' value = 'Select All' onclick = 'selectAll();'> ";
+     echo "&nbsp;<input type = 'reset' class = 'btn btn-warning' value = 'Reset'>";
+     echo "&nbsp;<input type = 'submit' class = 'btn btn-info' vlaue ='submit'></form>";
+
+
+}
+
+/*"<strong>Order Number: </strong>". $value['order_id''] . "</br>
+        <strong>Customer Name: </strong>" . $value['first_name'] . $value['last_name'] . " </br>
+        <strong>Customer Address: </strong>" . $value['Address_line_1'] . $value['Address_line_2'] .
+            $value['addr_city'] . $value['addr_state'] . </br>/>";
+;
+echo "</form>";
+    foreach ($cusAddr as $value) {
+        echo "<input type = 'checkbox' name = 'del_order[]' value = '".$value['order_id']."'>
+        <strong>Order Number: </strong>".$value['order_id'].
+        "</br><strong>Customer Name: </strong>". $value['first_name'] .$value['last_name'] .
+        "</br><strong>Customer Address: </strong> ".$value['Address_line_1'] .$value['Address_line_2'] .
+            $value['addr_city'] . $value['addr_state']."<br/>";
+
+
+
+   // echo "<button><a href='/$PROJECTNAME/pick_order.php?orderid=$orderid'>Deliver This Order</a></button></br>";
+
 
 # show orders
-function show_orders($db) {
+//function show_orders($db) {
 //    $sql = "select * from "
 //    $db->pre
 
-}
+
+/*$orderid = $row['order_id'];
+$first_name = $row['first_name'];
+$last_name = $row['last_name'];
+$addr_line1 = $row['Address_line_1'];
+$addr_line2 = $row['Address_line_2'];
+$addr_city = $row['addr_city'];
+$addr_state = $row['addr_state'];*/
