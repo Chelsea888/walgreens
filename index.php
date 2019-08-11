@@ -51,10 +51,7 @@ if(isCustomer($db, $userid)) {
             <div class="card">
                 <div class="card-header">
                     <h6 class="d-flex justify-content-between"><b><?php echo $pres->rx_num; ?></b> generated on <?php echo $pres->rx_written_date; ?>
-                        <?php if (prescription_has_refill($db, $pres->rx_num)) {
-                            echo "<a class='btn btn-primary' href='placeorder.php?rx_num=$pres->rx_num'>Order</a>";
-                        }
-                        ?>
+
                     </h6>
                     <table class="table">
                         <?php
@@ -71,19 +68,28 @@ if(isCustomer($db, $userid)) {
                                     ?>
                                 </td>
                                 <td>
+
                                     <?php
-                                    if ($drug->refilled < $drug->refill) {
-                                        echo "<a class='btn btn-secondary' href='adddrug.php?rx_num=$pres->rx_num&NDC=$drug->NDC&qty=$drug->qty&price=$drug->unit_price'>Refill</a>";
-                                    } else {
-                                        echo "No Refill";
-                                    }
+                                   # if ($drug->refilled < $drug->refill) {
+                                    #    echo "<button class='btn btn-secondary' onclick = "."window.location.href='adddrug.php?rx_num=$pres->rx_num&NDC=$drug->NDC&qty=$drug->qty&price=$drug->unit_price';>Refill</button>";
+                                    #} else {
+                                     #   echo "No Refill";
+                                    #}
                                     ?>
                                 </td>
                             </tr>
+
             <?php
-                        }
+                           }
+                        if (prescription_has_refill($db, $pres->rx_num)) {
+                                echo "<tr  class='d-flex justify-content-between'><td></td><td>
+                                <button class='btn btn-primary' onclick = "."window.location.href='placeorder.php?rx_num=$pres->rx_num';>Order</button>
+                                </td></tr>";
+                            }
+
                         ?>
                     </table>
+
                 </div>
 
             </div>
@@ -144,10 +150,7 @@ if(isCustomer($db, $userid)) {
             <div class="card">
                 <div class="card-header">
                     <h6 class="d-flex justify-content-between"><b><?php echo $pres->rx_num; ?></b> generated on <?php echo $pres->rx_written_date; ?>
-                        <?php if (prescription_has_refill($db, $pres->rx_num)) {
-                            echo "<a class='btn btn-primary' href='placeorder.php?rx_num=$pres->rx_num'>Order</a>";
-                        }
-                        ?>
+
                     </h6>
                     <table class="table">
                         <?php
@@ -166,14 +169,18 @@ if(isCustomer($db, $userid)) {
                                 <td>
                                     <?php
                                     if ($drug->refilled < $drug->refill) {
-                                        echo "<a class='btn btn-secondary' href='adddrug.php?rx_num=$pres->rx_num&NDC=$drug->NDC&qty=$drug->qty&price=$drug->unit_price'>Refill</a>";
+                                        echo "<button class='btn btn-secondary' onclick = "."window.location.href='adddrug.php?rx_num=$pres->rx_num&NDC=$drug->NDC&qty=$drug->qty&price=$drug->unit_price';>Refill</button>";
                                     } else {
                                         echo "No Refill";
                                     }
                                     ?>
                                 </td>
                             </tr>
-            <?php
+                            <?php if (prescription_has_refill($db, $pres->rx_num)) {
+                                echo "<tr  class='d-flex justify-content-between'><td></td><td>
+                                <button class='btn btn-primary' onclick = "." window.location.href='direct_prescriper.php?rx_num=$pres->rx_num';>Order</button>
+                                </td></tr>";
+                            }
                         }
                         ?>
 

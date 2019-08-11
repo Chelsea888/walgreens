@@ -11,8 +11,8 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-#$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
-$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
+$db = new \PDO('mysql:dbname=walgreens;host=127.0.0.1;charset=utf8mb4', 'wguser', 'AXhf$tu2p5R2');
+#$db = new \PDO('mysql:dbname=walgreens;host=localhost;charset=utf8mb4', 'testuser', 'mypassword');
 $auth = new \Delight\Auth\Auth($db);
 
 $PROJECTNAME = "walgreens";
@@ -132,17 +132,17 @@ if (!$auth->isLoggedIn()) {
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
-                                <input type="text" class="form-control" name="email" placeholder="Email Address">
+                                <input type="text" class="form-control" name="email" placeholder="Email Address" aria-label="Email Address">
 
                             </div>
                             <div class="input-group form-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-key"></i></span>
                                 </div>
-                                <input type="password" class="form-control" name="password" placeholder="Password">
+                                <input type="password" class="form-control" name="password" placeholder="Password" aria-label="Password">
                             </div>
                             <div class="row align-items-center remember">
-                                <input name="remember" type="checkbox">&nbsp; Remember Me
+                                <input name="remember" type="checkbox" aria-label="remember">&nbsp; Remember Me
                             </div>
                             <div class="form-group">
                                 <input type="submit" value="Login" class="btn btn-primary float-right login_btn">
