@@ -105,7 +105,7 @@ foreach ($res as $value){
             <?php if ($auth->isLoggedIn() && isCustomer($db, $auth->getUserId())) {
                 ?>
                 <form class="form-inline mt-2 mt-md-0 col-lg-6" action="search.php">
-                    <input class="form-control mr-sm-2 input-lg col-lg-10" type="text" name="query" placeholder="Search for RX Number or Drug Name" aria-label="Search">
+                    <input class="form-control mr-sm-2 input-lg col-lg-8" type="text" name="query" placeholder="Search for RX Number or Drug Name" aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
             <?php
@@ -146,3 +146,4 @@ foreach ($res as $value){
     </nav>
 </header>
 <main role="main">
+
